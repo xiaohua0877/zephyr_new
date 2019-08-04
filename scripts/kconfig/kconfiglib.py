@@ -545,12 +545,37 @@ import sys
 #
 
 import sys
+import traceback
+from pycallgraph import PyCallGraph
+from pycallgraph import Config
+from pycallgraph.output import GraphvizOutput
+import sys
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
 
-def TraceStack():
-    print ("--------------------")
-    frame=sys._getframe(1)
-    while frame:
-        print (("line:{},f{},L{}").format(frame.f_code.co_name,frame.f_code.co_filename,frame.f_lineno))
+
+
+
+
+def TraceStack(url):
+  ## graphviz = GraphvizOutput()
+  ## graphviz.output_file = 'basic.png'
+  ## PyCallGraph(output=graphviz)
+
+#    msg = traceback.format_exc() # 方式1
+#    print ("--------------------")
+#    print(msg)
+#"""
+     ##traceback.print_exc()
+     #msg = traceback.format_exc() # 方式1
+     ##print(msg)
+     print (("*** print_exception:{} ").format(url))
+#    print (("*** print_exception:{}").format(url))
+#    traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
+
+    ##frame=sys._getframe(1)
+    ##while frame:
+      ##  print (("line:{},f {},L {}").format(frame.f_code.co_name,frame.f_code.co_filename,frame.f_lineno))
         ##print (frame.f_code.co_name)
         ##print (frame.f_code.co_filename)
         ##print (frame.f_lineno)
@@ -560,6 +585,9 @@ def print_d(url):
     print(url)
     print (("line:{},f{},L{}").format(frame.f_code.co_name,frame.f_code.co_filename,frame.f_lineno))
 
+def zlog(msg):
+    print (("{} ,{} -- {}").format(     sys._getframe().f_back.f_code.co_name, sys._getframe().f_back.f_lineno,msg))
+    #print (("[file:{}] [func:{}] [line:{}] {}").format(sys._getframe().f_back.f_code.co_filename,         sys._getframe().f_back.f_code.co_name, sys._getframe().f_back.f_lineno,msg))
 
 def print_runto(msg):
     print(("{}   --line:{}--").format(msg,sys._getframe().f_lineno))
@@ -906,7 +934,7 @@ class Kconfig(object):
 
         self.menus = []
         self.comments = []
-        print_d("run to")
+        zlog("run to")
         for nmy in "n", "m", "y":
             sym = Symbol()
             sym.kconfig = self
@@ -930,7 +958,7 @@ class Kconfig(object):
             sym = self.const_syms[nmy]
             sym.rev_dep = sym.weak_rev_dep = sym.direct_dep = self.n
 
-
+        #＃将预处理程序变量名称映射到变量实例
         # Maps preprocessor variables names to Variable instances
         self.variables = {}
 
@@ -944,10 +972,10 @@ class Kconfig(object):
             "warning-if": (_warning_if_fn, 2, 2),
         }
 
-       ## print(str(sys._getframe().f_lineno) + " hehe.")
 
         print(("self._functions {} line:{}").format(type(self._functions),sys._getframe().f_lineno))
 
+        #添加任何用户定义的预处理器函数
         # Add any user-defined preprocessor functions
         try:
             self._functions.update(
@@ -958,15 +986,19 @@ class Kconfig(object):
             pass
 
 
+        """＃这用于确定是否应注册以前未见过的符号。 它们不应该是在解析后解析表达式，
+        作为Kconfig.eval_string（）的一部分。
+        """
         # This is used to determine whether previously unseen symbols should be
         # registered. They shouldn't be if we parse expressions after parsing,
         # as part of Kconfig.eval_string().
         self._parsing_kconfigs = True
-        print("run to 935 _lookup_sym ")
-        print(("__look_sym  line:{}").format(sys._getframe().f_lineno))
+        print(type(self._parsing_kconfigs))
+        zlog("type _parsing_kconfigs " + str(type(self._parsing_kconfigs)))
+        zlog("__look_sym  line: start ")
         self.modules = self._lookup_sym("MODULES")
         self.defconfig_list = None
-        print(("__look_end  line:{}").format(sys._getframe().f_lineno))
+        zlog("__look_sym  line: end ") ##print(("__look_end  line:{}").format(sys._getframe().f_lineno))
 
         self.top_node = MenuNode()
         self.top_node.kconfig = self
@@ -1020,7 +1052,8 @@ class Kconfig(object):
         except UnicodeDecodeError as e:
             _decoding_error(e, self._filename)
 
-        print_runto("end ")
+        zlog("run to end num_code: " +str(self.num_code) +" times")
+        ##print_runto("end ")
         # Close the top-level Kconfig file. __self__ fetches the 'file' object
         # for the method.
         self._readline.__self__.close()
@@ -1164,8 +1197,13 @@ class Kconfig(object):
         # Disable the warning about assigning to symbols without prompts. This
         # is normal and expected within a .config file.
         self._warn_for_no_prompt = False
-
+        zlog("============run to _load_config")
+        #此存根仅用于确保_warn_for_no_prompt重新启用
         # This stub only exists to make sure _warn_for_no_prompt gets reenabled
+        """
+        ＃加载任何现有的.config文件。 请参阅Kconfig.load_config（）docstring。
+        ＃如果.config缺失或过时，则返回True。 在这种情况下，我们总是提示保存配置。
+        """
         try:
             self._load_config(filename, replace)
         except UnicodeDecodeError as e:
@@ -1430,6 +1468,7 @@ class Kconfig(object):
                 item = node.item
 
                 if item.__class__ is Symbol:
+                    ###print(item.name)
                     f.write(item.config_string)
 
                 elif expr_value(node.dep) and \
@@ -2060,7 +2099,10 @@ class Kconfig(object):
 
         # Initial token on the line
         ##print("run to 2021 _tokenize")
-        ##TraceStack()
+        self.num_code +=1
+        if (self.num_code  < 10):
+            TraceStack("test")
+
         match = _command_match(s)
         if not match:
             if s.isspace() or s.lstrip().startswith("#"):
@@ -2614,7 +2656,7 @@ class Kconfig(object):
         # empty). This allows chaining.
 
         ##print_d("run to ")
-        print(("{} {} \n").format(self.num_code,self.num_code2))
+        ###print(("{} {} \n").format(self.num_code,self.num_code2))
         self.num_code += 1
         while self._next_line():
             t0 = self._tokens[0]
@@ -2680,7 +2722,7 @@ class Kconfig(object):
                 # ordering in e.g. .config files
                 filenames = \
                     sorted(glob.iglob(os.path.join(self.srctree, pattern)))
-                print((" pattern:{} --line:{}--").format(pattern,sys._getframe().f_lineno))
+                ###print((" pattern:{} --line:{}--").format(pattern,sys._getframe().f_lineno))
                 if not filenames and t0 in _OBL_SOURCE_TOKENS:
                     raise KconfigError(
                         "{}:{}: '{}' not found (in '{}'). Check that "
@@ -3966,6 +4008,7 @@ class Symbol(object):
         "selects",
         "user_value",
         "weak_rev_dep",
+        "count",
     )
 
     #
@@ -4234,6 +4277,7 @@ class Symbol(object):
         # Note: _write_to_conf is determined when the value is calculated. This
         # is a hidden function call due to property magic.
         val = self.str_value
+        ###zlog((" r:{} :{} {}").format(self.orig_type,self.name,self.str_value))
         if not self._write_to_conf:
             return ""
 
@@ -4321,6 +4365,7 @@ class Symbol(object):
         if self.orig_type in _BOOL_TRISTATE and value in ("y", "m", "n"):
             value = STR_TO_TRI[value]
 
+        ##zlog((":{} r:{} :{} {}").format(value,self.orig_type,self.name,self.str_value))
         self.user_value = value
         self._was_set = True
 
@@ -4342,6 +4387,7 @@ class Symbol(object):
         Resets the user value of the symbol, as if the symbol had never gotten
         a user value via Kconfig.load_config() or Symbol.set_value().
         """
+        zlog("===run to unset_value")
         if self.user_value is not None:
             self.user_value = None
             self._rec_invalidate_if_has_prompt()
@@ -4358,6 +4404,7 @@ class Symbol(object):
         Returns a string with information about the symbol (including its name,
         value, visibility, and location(s)) when it is evaluated on e.g. the
         interactive Python prompt.
+        返回一个字符串，其中包含有关该符号的信息（包括其名称，值，可见性和位置）。 交互式Python提示。
         """
         fields = ["symbol " + self.name, TYPE_TO_STR[self.type]]
 
@@ -4476,10 +4523,9 @@ class Symbol(object):
 
         # Used during dependency loop detection and (independently) in
         # node_iter()
-        ##symbal_SIZE1 = 0
         self._visited = 0
-        ###print(("run to 4431 calss symbol {}").format(symbal_SIZE1))
-        ##symbal_SIZE1 +=1
+
+        self.count = 0  ##count
 
     def _assignable(self):
         # Worker function for the 'assignable' attribute
@@ -5792,7 +5838,7 @@ def load_allconfig(kconf, filename):
         # "Upcasts" a _KconfigIOError to an IOError, removing the custom
         # __str__() message. The standard message is better here.
         return IOError(e.errno, e.strerror, e.filename)
-
+    zlog("run to load allconfig")
     kconf.disable_override_warnings()
     kconf.disable_redun_warnings()
 
