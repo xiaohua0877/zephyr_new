@@ -36,100 +36,100 @@ extern void z_arch_configure_dynamic_mpu_regions(struct k_thread *thread);
 
 static ALWAYS_INLINE void kernel_arch_init(void)
 {
-	z_InterruptStackSetup();
-	z_ExcSetup();
-	z_FaultInit();
-	z_CpuIdleInit();
+    z_InterruptStackSetup();
+    z_ExcSetup();
+    z_FaultInit();
+    z_CpuIdleInit();
 }
 
 static ALWAYS_INLINE void
 z_arch_switch_to_main_thread(struct k_thread *main_thread,
-			    k_thread_stack_t *main_stack,
-			    size_t main_stack_size, k_thread_entry_t _main)
+                k_thread_stack_t *main_stack,
+                size_t main_stack_size, k_thread_entry_t _main)
 {
 #ifdef CONFIG_ARM_MPU
-	/* Configure static memory map. This will program MPU regions,
-	 * to set up access permissions for fixed memory sections, such
-	 * as Application Memory or No-Cacheable SRAM area.
-	 *
-	 * This function is invoked once, upon system initialization.
-	 */
-	z_arch_configure_static_mpu_regions();
+    /* Configure static memory map. This will program MPU regions,
+     * to set up access permissions for fixed memory sections, such
+     * as Application Memory or No-Cacheable SRAM area.
+     *
+     * This function is invoked once, upon system initialization.
+     */
+    z_arch_configure_static_mpu_regions();
 #endif
 
-	/* get high address of the stack, i.e. its start (stack grows down) */
-	char *start_of_main_stack;
+    /* get high address of the stack, i.e. its start (stack grows down) */
+    char *start_of_main_stack;
 
 #if defined(CONFIG_MPU_REQUIRES_POWER_OF_TWO_ALIGNMENT) && \
-	defined(CONFIG_USERSPACE)
-	start_of_main_stack =
-		Z_THREAD_STACK_BUFFER(main_stack) + main_stack_size -
-		MPU_GUARD_ALIGN_AND_SIZE;
+    defined(CONFIG_USERSPACE)
+    start_of_main_stack =
+        Z_THREAD_STACK_BUFFER(main_stack) + main_stack_size -
+        MPU_GUARD_ALIGN_AND_SIZE;
 #else
-	start_of_main_stack =
-		Z_THREAD_STACK_BUFFER(main_stack) + main_stack_size;
+    start_of_main_stack =
+        Z_THREAD_STACK_BUFFER(main_stack) + main_stack_size;
 #endif
-	start_of_main_stack = (void *)STACK_ROUND_DOWN(start_of_main_stack);
+    start_of_main_stack = (void *)STACK_ROUND_DOWN(start_of_main_stack);
 
 #ifdef CONFIG_TRACING
-	z_sys_trace_thread_switched_out();
+    z_sys_trace_thread_switched_out();
 #endif
-	_current = main_thread;
+    _current = main_thread;
 #ifdef CONFIG_TRACING
-	z_sys_trace_thread_switched_in();
+    z_sys_trace_thread_switched_in();
 #endif
 
-	/* the ready queue cache already contains the main thread */
+    /* the ready queue cache already contains the main thread */
 
 #ifdef CONFIG_ARM_MPU
-	/*
-	 * If stack protection is enabled, make sure to set it
-	 * before jumping to thread entry function
-	 */
-	z_arch_configure_dynamic_mpu_regions(main_thread);
+    /*
+     * If stack protection is enabled, make sure to set it
+     * before jumping to thread entry function
+     */
+    z_arch_configure_dynamic_mpu_regions(main_thread);
 #endif
 
 #if defined(CONFIG_BUILTIN_STACK_GUARD)
-	/* Set PSPLIM register for built-in stack guarding of main thread. */
+    /* Set PSPLIM register for built-in stack guarding of main thread. */
 #if defined(CONFIG_CPU_CORTEX_M_HAS_SPLIM)
-	__set_PSPLIM((u32_t)main_stack);
+    __set_PSPLIM((u32_t)main_stack);
 #else
 #error "Built-in PSP limit checks not supported by HW"
 #endif
 #endif /* CONFIG_BUILTIN_STACK_GUARD */
 
-	/*
-	 * Set PSP to the highest address of the main stack
-	 * before enabling interrupts and jumping to main.
-	 */
-	__asm__ volatile (
-	"mov   r0,  %0     \n\t"   /* Store _main in R0 */
-	"msr   PSP, %1     \n\t"   /* __set_PSP(start_of_main_stack) */
+    /*
+     * Set PSP to the highest address of the main stack
+     * before enabling interrupts and jumping to main.
+     */
+    __asm__ volatile (
+    "mov   r0,  %0     \n\t"   /* Store _main in R0 */
+    "msr   PSP, %1     \n\t"   /* __set_PSP(start_of_main_stack) */
 #if defined(CONFIG_ARMV6_M_ARMV8_M_BASELINE)
-	"cpsie i           \n\t"   /* __enable_irq() */
+    "cpsie i           \n\t"   /* __enable_irq() */
 #elif defined(CONFIG_ARMV7_M_ARMV8_M_MAINLINE)
-	"cpsie if          \n\t"   /* __enable_irq(); __enable_fault_irq() */
-	"mov   r1,  #0     \n\t"
-	"msr   BASEPRI, r1 \n\t"   /* __set_BASEPRI(0) */
+    "cpsie if          \n\t"   /* __enable_irq(); __enable_fault_irq() */
+    "mov   r1,  #0     \n\t"
+    "msr   BASEPRI, r1 \n\t"   /* __set_BASEPRI(0) */
 #else
 #error Unknown ARM architecture
 #endif /* CONFIG_ARMV6_M_ARMV8_M_BASELINE */
-	"isb               \n\t"
-	"movs r1, #0       \n\t"
-	"movs r2, #0       \n\t"
-	"movs r3, #0       \n\t"
-	"bl z_thread_entry \n\t"   /* z_thread_entry(_main, 0, 0, 0); */
-	:
-	: "r" (_main), "r" (start_of_main_stack)
-	);
+    "isb               \n\t"
+    "movs r1, #0       \n\t"
+    "movs r2, #0       \n\t"
+    "movs r3, #0       \n\t"
+    "bl z_thread_entry \n\t"   /* z_thread_entry(_main, 0, 0, 0); */
+    :
+    : "r" (_main), "r" (start_of_main_stack)
+    );
 
-	CODE_UNREACHABLE;
+    CODE_UNREACHABLE;
 }
 
 static ALWAYS_INLINE void
 z_set_thread_return_value(struct k_thread *thread, unsigned int value)
 {
-	thread->arch.swap_return_value = value;
+    thread->arch.swap_return_value = value;
 }
 
 extern void k_cpu_atomic_idle(unsigned int key);
@@ -137,9 +137,9 @@ extern void k_cpu_atomic_idle(unsigned int key);
 #define z_is_in_isr() z_IsInIsr()
 
 extern FUNC_NORETURN void z_arm_userspace_enter(k_thread_entry_t user_entry,
-					       void *p1, void *p2, void *p3,
-					       u32_t stack_end,
-					       u32_t stack_start);
+                           void *p1, void *p2, void *p3,
+                           u32_t stack_end,
+                           u32_t stack_start);
 
 #endif /* _ASMLANGUAGE */
 

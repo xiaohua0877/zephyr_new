@@ -92,9 +92,9 @@ split into read-only and runtime-mutable parts. At a high level we have:
   };
 
   struct device_config {
-	char    *name;
-	int (*init)(struct device *device);
-	const void *config_info;
+    char    *name;
+    int (*init)(struct device *device);
+    const void *config_info;
     [...]
   };
 

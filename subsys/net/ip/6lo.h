@@ -36,10 +36,10 @@ int net_6lo_compress(struct net_pkt *pkt, bool iphc);
 #else
 static inline int net_6lo_compress(struct net_pkt *pkt, bool iphc)
 {
-	ARG_UNUSED(pkt);
-	ARG_UNUSED(iphc);
+    ARG_UNUSED(pkt);
+    ARG_UNUSED(iphc);
 
-	return 0;
+    return 0;
 }
 #endif
 
@@ -59,9 +59,9 @@ bool net_6lo_uncompress(struct net_pkt *pkt);
 #else
 static inline bool net_6lo_uncompress(struct net_pkt *pkt)
 {
-	ARG_UNUSED(pkt);
+    ARG_UNUSED(pkt);
 
-	return true;
+    return true;
 }
 #endif
 
@@ -75,7 +75,7 @@ static inline bool net_6lo_uncompress(struct net_pkt *pkt)
  */
 #if defined(CONFIG_NET_6LO_CONTEXT)
 void net_6lo_set_context(struct net_if *iface,
-			 struct net_icmpv6_nd_opt_6co *context);
+                         struct net_icmpv6_nd_opt_6co *context);
 #endif
 
 /**
@@ -89,7 +89,7 @@ void net_6lo_set_context(struct net_if *iface,
  * @return header difference or INT_MAX in case of error.
  */
 #if defined(CONFIG_NET_6LO)
-int net_6lo_uncompress_hdr_diff(struct net_pkt *pkt);
+    int net_6lo_uncompress_hdr_diff(struct net_pkt *pkt);
 #endif
 
 #endif /* __NET_6LO_H */

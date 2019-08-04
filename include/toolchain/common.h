@@ -104,9 +104,9 @@
      * 10 times in size, as those functions are kept in text section.
      * So just keep "inline" here.
      */
-    #define ALWAYS_INLINE inline
+    #define ALWAYS_INLINE inline  
   #else
-    #define ALWAYS_INLINE inline __attribute__((always_inline))
+    #define ALWAYS_INLINE inline __attribute__((always_inline)) 
   #endif
 #endif
 

@@ -105,7 +105,7 @@ A warning is printed if a suitable block is not obtained.
 
     if (k_mem_slab_alloc(&my_slab, &block_ptr, 100) == 0)) {
         memset(block_ptr, 0, 400);
-	...
+    ...
     } else {
         printf("Memory allocation time-out");
     }

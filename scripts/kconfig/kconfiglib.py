@@ -544,6 +544,27 @@ import sys
 # Public classes
 #
 
+import sys
+
+def TraceStack():
+    print ("--------------------")
+    frame=sys._getframe(1)
+    while frame:
+        print (("line:{},f{},L{}").format(frame.f_code.co_name,frame.f_code.co_filename,frame.f_lineno))
+        ##print (frame.f_code.co_name)
+        ##print (frame.f_code.co_filename)
+        ##print (frame.f_lineno)
+
+def print_d(url):
+    frame=sys._getframe(1)
+    print(url)
+    print (("line:{},f{},L{}").format(frame.f_code.co_name,frame.f_code.co_filename,frame.f_lineno))
+
+
+def print_runto(msg):
+    print(("{}   --line:{}--").format(msg,sys._getframe().f_lineno))
+    #print(("{}  {}  --line:{}--").format(self.srctree,filename,sys._getframe().f_lineno,filename))
+global num_code
 class Kconfig(object):
     """
     Represents a Kconfig configuration, e.g. for x86 or ARM. This is the set of
@@ -767,6 +788,10 @@ class Kconfig(object):
         "variables",
         "warnings",
         "y",
+        "num_code",
+        "num_code1",
+        "num_code2",
+        "num_code3",
 
         # Parsing-related
         "_parsing_kconfigs",
@@ -780,7 +805,7 @@ class Kconfig(object):
         "_tokens_i",
         "_reuse_tokens",
     )
-
+    ##num_code = 0
     #
     # Public interface
     #
@@ -857,16 +882,18 @@ class Kconfig(object):
 
 
         self.warnings = []
-
+        print(("self.warnings {} line:{}").format(type(self.warnings),sys._getframe().f_lineno))
         self._warnings_enabled = warn
         self._warn_to_stderr = warn_to_stderr
         self._warn_for_undef_assign = \
             os.environ.get("KCONFIG_WARN_UNDEF_ASSIGN") == "y"
         self._warn_for_redun_assign = self._warn_for_override = True
 
+        symbal_SIZE1 = 0
+        symbal_SIZE = 0
 
         self._encoding = encoding
-
+        ##TraceStack()
 
         self.syms = {}
         self.const_syms = {}
@@ -879,7 +906,7 @@ class Kconfig(object):
 
         self.menus = []
         self.comments = []
-
+        print_d("run to")
         for nmy in "n", "m", "y":
             sym = Symbol()
             sym.kconfig = self
@@ -887,12 +914,16 @@ class Kconfig(object):
             sym.is_constant = True
             sym.orig_type = TRISTATE
             sym._cached_tri_val = STR_TO_TRI[nmy]
-
+            ##print(("run to 4426 calss symbol {}").format(symbal_SIZE))
+            print(("sym {} line:{}").format(type(sym),sys._getframe().f_lineno))
+            symbal_SIZE +=1
             self.const_syms[nmy] = sym
 
         self.n = self.const_syms["n"]
         self.m = self.const_syms["m"]
         self.y = self.const_syms["y"]
+
+        print(("foramt  line:{}").format(sys._getframe().f_lineno))
 
         # Make n/m/y well-formed symbols
         for nmy in "n", "m", "y":
@@ -913,6 +944,10 @@ class Kconfig(object):
             "warning-if": (_warning_if_fn, 2, 2),
         }
 
+       ## print(str(sys._getframe().f_lineno) + " hehe.")
+
+        print(("self._functions {} line:{}").format(type(self._functions),sys._getframe().f_lineno))
+
         # Add any user-defined preprocessor functions
         try:
             self._functions.update(
@@ -927,9 +962,11 @@ class Kconfig(object):
         # registered. They shouldn't be if we parse expressions after parsing,
         # as part of Kconfig.eval_string().
         self._parsing_kconfigs = True
-
+        print("run to 935 _lookup_sym ")
+        print(("__look_sym  line:{}").format(sys._getframe().f_lineno))
         self.modules = self._lookup_sym("MODULES")
         self.defconfig_list = None
+        print(("__look_end  line:{}").format(sys._getframe().f_lineno))
 
         self.top_node = MenuNode()
         self.top_node.kconfig = self
@@ -943,11 +980,13 @@ class Kconfig(object):
         self.top_node.linenr = 1
         self.top_node.include_path = ()
 
+        print(("top_node  {}line:{}").format(type(self.top_node),sys._getframe().f_lineno))
         # Parse the Kconfig files
 
         # Not used internally. Provided as a convenience.
         self.kconfig_filenames = [filename]
         self.env_vars = set()
+        print(("kconfig_filenames  {}line:{} {}").format(type(self.kconfig_filenames),sys._getframe().f_lineno,filename))
 
         # Used to avoid retokenizing lines when we discover that they're not
         # part of the construct currently being parsed. This is kinda like an
@@ -967,13 +1006,21 @@ class Kconfig(object):
         # as a small optimization.
         self._readline = \
             self._open(os.path.join(self.srctree, filename), "r").readline
+        print(("{}  {}  --line:{}--").format(self.srctree,filename,sys._getframe().f_lineno,filename))
+        print(type(self._readline ))
+        print(self._readline)
 
+        self.num_code = 0
+        self.num_code1 = 0
+        self.num_code2 = 0
         try:
             # Parse everything
+            self.num_code2 += 1
             self._parse_block(None, self.top_node, self.top_node)
         except UnicodeDecodeError as e:
             _decoding_error(e, self._filename)
 
+        print_runto("end ")
         # Close the top-level Kconfig file. __self__ fetches the 'file' object
         # for the method.
         self._readline.__self__.close()
@@ -1367,6 +1414,7 @@ class Kconfig(object):
           file), a message will be printed to stdout telling which file got
           written. This is meant to reduce boilerplate in tools.
         """
+        print(filename)
         if filename is None:
             filename = standard_config_filename()
         else:
@@ -1387,7 +1435,7 @@ class Kconfig(object):
                 elif expr_value(node.dep) and \
                      ((item is MENU and expr_value(node.visibility)) or
                        item is COMMENT):
-
+                    ##print(item)
                     f.write("\n#\n# {}\n#\n".format(node.prompt[0]))
 
         if verbose:
@@ -2011,6 +2059,8 @@ class Kconfig(object):
         # complicates things though.
 
         # Initial token on the line
+        ##print("run to 2021 _tokenize")
+        ##TraceStack()
         match = _command_match(s)
         if not match:
             if s.isspace() or s.lstrip().startswith("#"):
@@ -2563,9 +2613,13 @@ class Kconfig(object):
         # Returns the final menu node in the block (or 'prev' if the block is
         # empty). This allows chaining.
 
+        ##print_d("run to ")
+        print(("{} {} \n").format(self.num_code,self.num_code2))
+        self.num_code += 1
         while self._next_line():
             t0 = self._tokens[0]
 
+            ##print(("to  {} {} --line:{}--").format(type(t0),t0,sys._getframe().f_lineno))
             if t0 is _T_CONFIG or t0 is _T_MENUCONFIG:
                 # The tokenizer allocates Symbol objects for us
                 sym = self._tokens[1]
@@ -2626,7 +2680,7 @@ class Kconfig(object):
                 # ordering in e.g. .config files
                 filenames = \
                     sorted(glob.iglob(os.path.join(self.srctree, pattern)))
-
+                print((" pattern:{} --line:{}--").format(pattern,sys._getframe().f_lineno))
                 if not filenames and t0 in _OBL_SOURCE_TOKENS:
                     raise KconfigError(
                         "{}:{}: '{}' not found (in '{}'). Check that "
@@ -2638,6 +2692,7 @@ class Kconfig(object):
                                 "set to '{}'".format(self.srctree)
                                     if self.srctree else "unset or blank"))
 
+                ###print((" filenames{} --line:{}--").format(filenames,sys._getframe().f_lineno))
                 for filename in filenames:
                     self._enter_file(
                         filename,
@@ -3155,7 +3210,11 @@ class Kconfig(object):
             # Symbols depend on the following:
 
             # The prompt conditions
+            ##print(type(sym))
+           ### n = 1
             for node in sym.nodes:
+
+
                 if node.prompt:
                     make_depend_on(sym, node.prompt[1])
 
@@ -4417,7 +4476,10 @@ class Symbol(object):
 
         # Used during dependency loop detection and (independently) in
         # node_iter()
+        ##symbal_SIZE1 = 0
         self._visited = 0
+        ###print(("run to 4431 calss symbol {}").format(symbal_SIZE1))
+        ##symbal_SIZE1 +=1
 
     def _assignable(self):
         # Worker function for the 'assignable' attribute
@@ -6629,3 +6691,8 @@ _REL_TO_STR = {
     GREATER:       ">",
     GREATER_EQUAL: ">=",
 }
+
+def print_debug(url):
+    while n < 4:
+        print(url)
+    n += 1

@@ -94,7 +94,7 @@ since that is the closest matching size supported by the heap memory pool.
     mem_ptr = k_malloc(200);
     if (mem_ptr != NULL)) {
         memset(mem_ptr, 0, 200);
-	...
+    ...
     } else {
         printf("Memory not allocated");
     }

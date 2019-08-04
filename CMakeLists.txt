@@ -207,6 +207,7 @@ zephyr_compile_options(
   -ffreestanding
   -Wno-main
   -fno-common
+  -g -gdwarf-2
   ${TOOLCHAIN_C_FLAGS}
 )
 

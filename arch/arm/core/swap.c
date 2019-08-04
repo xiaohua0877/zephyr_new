@@ -48,21 +48,21 @@ extern const int _k_neg_eagain;
 int __swap(int key)
 {
 #ifdef CONFIG_EXECUTION_BENCHMARKING
-	read_timer_start_of_swap();
+    read_timer_start_of_swap();
 #endif
 
-	/* store off key and return value */
-	_current->arch.basepri = key;
-	_current->arch.swap_return_value = _k_neg_eagain;
+    /* store off key and return value */
+    _current->arch.basepri = key;
+    _current->arch.swap_return_value = _k_neg_eagain;
 
-	/* set pending bit to make sure we will take a PendSV exception */
-	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+    /* set pending bit to make sure we will take a PendSV exception */
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
-	/* clear mask or enable all irqs to take a pendsv */
-	irq_unlock(0);
+    /* clear mask or enable all irqs to take a pendsv */
+    irq_unlock(0);
 
-	/* Context switch is performed here. Returning implies the
-	 * thread has been context-switched-in again.
-	 */
-	return _current->arch.swap_return_value;
+    /* Context switch is performed here. Returning implies the
+     * thread has been context-switched-in again.
+     */
+    return _current->arch.swap_return_value;
 }

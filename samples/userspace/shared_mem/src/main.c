@@ -99,9 +99,9 @@ _app_ct_d char ctMSG[] = "CT!\n";
 
 void main(void)
 {
-	struct k_mem_partition *dom1_parts[] = {&part2, &part1, &part3};
-	struct k_mem_partition *dom2_parts[] = {&part4, &part3};
-	struct k_mem_partition *dom0_parts[] = {&part0, &part1};
+	struct k_mem_partition *dom1_parts[]={} ;//= {&part2, &part1, &part3};
+	struct k_mem_partition *dom2_parts[]={} ;//= {&part4, &part3};
+	struct k_mem_partition *dom0_parts[]={} ;//= {&part0, &part1};
 	k_tid_t tPT, tENC, tCT;
 
 	k_thread_access_grant(k_current_get(), &allforone);
@@ -114,46 +114,47 @@ void main(void)
 			(k_thread_entry_t)enc, NULL, NULL, NULL,
 			-1, K_USER,
 			K_FOREVER);
-	k_thread_access_grant(tENC, &allforone);
-	/* use K_FOREVER followed by k_thread_start*/
-	printk("ENC Thread Created %08X\n", (unsigned int) tENC);
-	k_mem_domain_init(&dom1, 3, dom1_parts);
-	printk("Partitions added to dom1\n");
-	k_mem_domain_add_thread(&dom1, tENC);
-	printk("dom1 Created\n");
+    
+//	k_thread_access_grant(tENC, &allforone);
+//	/* use K_FOREVER followed by k_thread_start*/
+//	printk("ENC Thread Created %08X\n", (unsigned int) tENC);
+//	k_mem_domain_init(&dom1, 3, dom1_parts);
+//	printk("Partitions added to dom1\n");
+//	k_mem_domain_add_thread(&dom1, tENC);
+//	printk("dom1 Created\n");
 
 
-	tPT = k_thread_create(&pt_thread, pt_stack, STACKSIZE,
-			(k_thread_entry_t)pt, NULL, NULL, NULL,
-			-1, K_USER,
-			K_FOREVER);
-	k_thread_access_grant(tPT, &allforone);
-	printk("PT Thread Created %08X\n", (unsigned int) tPT);
-	k_mem_domain_init(&dom0, 2, dom0_parts);
-	k_mem_domain_add_thread(&dom0, tPT);
-	printk("dom0 Created\n");
-
-	tCT = k_thread_create(&ct_thread, ct_stack, STACKSIZE,
-			(k_thread_entry_t)ct, NULL, NULL, NULL,
-			-1, K_USER,
-			K_FOREVER);
-	k_thread_access_grant(tCT, &allforone);
-	printk("CT Thread Created %08X\n", (unsigned int) tCT);
-	k_mem_domain_init(&dom2, 2, dom2_parts);
-	k_mem_domain_add_thread(&dom2, tCT);
-	printk("dom2 Created\n");
-
-	k_thread_start(&enc_thread);
-	/* need to start all three threads.  let enc go first to perform init step */
-
-	printk("ENC thread started\n");
-	k_thread_start(&pt_thread);
-	printk("PT thread started\n");
-
-	k_thread_start(&ct_thread);
-	k_sem_give(&allforone);
-	printk("CT thread started\n");
-	k_thread_abort(k_current_get());
+//	tPT = k_thread_create(&pt_thread, pt_stack, STACKSIZE,
+//			(k_thread_entry_t)pt, NULL, NULL, NULL,
+//			-1, K_USER,
+//			K_FOREVER);
+//	k_thread_access_grant(tPT, &allforone);
+//	printk("PT Thread Created %08X\n", (unsigned int) tPT);
+//	k_mem_domain_init(&dom0, 2, dom0_parts);
+//	k_mem_domain_add_thread(&dom0, tPT);
+//	printk("dom0 Created\n");
+//
+//	tCT = k_thread_create(&ct_thread, ct_stack, STACKSIZE,
+//			(k_thread_entry_t)ct, NULL, NULL, NULL,
+//			-1, K_USER,
+//			K_FOREVER);
+//	k_thread_access_grant(tCT, &allforone);
+//	printk("CT Thread Created %08X\n", (unsigned int) tCT);
+//	k_mem_domain_init(&dom2, 2, dom2_parts);
+//	k_mem_domain_add_thread(&dom2, tCT);
+//	printk("dom2 Created\n");
+//
+//	k_thread_start(&enc_thread);
+//	/* need to start all three threads.  let enc go first to perform init step */
+//
+//	printk("ENC thread started\n");
+//	k_thread_start(&pt_thread);
+//	printk("PT thread started\n");
+//
+//	k_thread_start(&ct_thread);
+//	k_sem_give(&allforone);
+//	printk("CT thread started\n");
+//	k_thread_abort(k_current_get());
 
 }
 

@@ -1,0 +1,54 @@
+# Kconfig - Config options for logger sample app
+#
+# Copyright (c) 2018 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+mainmenu "Logger sample application"
+
+menu "Application configuration"
+
+module = SAMPLE_MODULE
+module-str = Sample module
+source "subsys/logging/Kconfig.template.log_config"
+
+#config SAMPLES_LOGGER_MAIN
+#    bool "sample test code loggger main "
+#    default y
+#    help
+#      Enables sample test code loggger main
+
+config SAMPLES_LOGGER_MAIN
+    bool "Name of the button GPIO port"
+    default y
+    help
+      Name of the button port for triggering messages.
+
+config SAMPLES_ALARM_MAIN
+    bool "alarm Name of the button GPIO port"
+    default y
+    help
+      Name of the button port for triggering messages.
+      
+config SAMPLES_BMI160_MAIN
+    bool "BMI160 Name of the button GPIO port"
+    default y
+    help
+      Name of the button port for triggering messages.      
+      
+      
+config SAMPLES_FS_MAIN
+    bool "FS Name of the button GPIO port"
+    default n
+    help
+      Name of the button port for triggering messages.      
+  
+config SYNCHRONIZATION_FS_MAIN
+    bool "FS Name of the button GPIO port"
+    default y
+    help
+      Name of the button port for triggering messages.        
+endmenu
+
+source "Kconfig.zephyr"

@@ -96,7 +96,7 @@ in a stack.
     struct my_buffer_type {
         int field1;
         ...
-	};
+    };
     struct my_buffer_type my_buffers[MAX_ITEMS];
 
     /* save address of each data structure in a stack */

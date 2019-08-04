@@ -28,7 +28,7 @@ def fatal(warning):
 def main():
     args = parse_args()
 
-    print("Parsing Kconfig tree in " + args.kconfig_root)
+    print("Parsing Kconfig tree in ee " + args.kconfig_root)
     kconf = Kconfig(args.kconfig_root, warn_to_stderr=False)
 
     # prj.conf may override settings from the board configuration, so disable
@@ -41,6 +41,7 @@ def main():
     for i, config in enumerate(args.conf_fragments):
         print(("Loading {} as base" if i == 0 else "Merging {}")
               .format(config))
+        ###print ("i   "  format(config)) 
         # replace=False creates a merged configuration
         kconf.load_config(config, replace=False)
 
@@ -79,6 +80,7 @@ def main():
     # value than the one it was assigned. Keep that one as just a warning for
     # now as well.
     for warning in kconf.warnings:
+        print(warning)
         if fatal(warning):
             sys.exit("\n" + textwrap.fill(
                 "Error: Aborting due to non-whitelisted Kconfig "
@@ -87,10 +89,11 @@ def main():
                 "whitelist at the top of {}."
                 .format(warning, sys.argv[0]),
                 100) + "\n")
-
+    ##os.system("pause")
     # Write the merged configuration and the C header
     kconf.write_config(args.dotconfig)
-    print("Configuration written to '{}'".format(args.dotconfig))
+    ###os.system("pause")
+    print("Configuration written to444 '{}'".format(args.dotconfig))
     kconf.write_autoconf(args.autoconf)
 
     # Write the list of processed Kconfig sources to a file
@@ -129,6 +132,8 @@ def verify_assigned_sym_value(sym):
     else:
         user_value = sym.user_value
 
+    ###print((" {}  '{}'  "    "value '{}'." ).format(name_and_loc(sym), user_value, sym.str_value))
+              
     if user_value != sym.str_value:
         msg = "warning: {} was assigned the value '{}' but got the " \
               "value '{}'." \
@@ -155,7 +160,7 @@ def verify_assigned_choice_value(choice):
     #
     # Without special-casing choices, we'd detect that the first symbol set to
     # y ended up as n, and print a spurious warning.
-
+    #print(("choice  {} w (set =y), but {} ").format(name_and_loc(choice.user_selection), name_and_loc(choice.selection) ))
     if choice.user_selection is not choice.selection:
         msg = "warning: the choice symbol {} was selected (set =y), but {} " \
               "ended up as the choice selection. {}" \
@@ -194,17 +199,24 @@ def write_kconfig_filenames(paths, root_path, output_file_path):
 
     # The written list should also have absolute paths instead of
     # relative paths, and it should not have duplicates.
-
+   
     # Remove duplicates
     paths_uniq = set(paths)
-
+    ##print(paths)
+    print("--------------------\n")
+    ##print(root_path)
+    print("--------------------\n")
+    print(output_file_path)
+    print("--------------------\n")
     with open(output_file_path, 'w') as out:
         # sort to be deterministic
         for path in sorted(paths_uniq):
             # Change from relative to absolute path (do nothing for
             # absolute paths)
+            ##print(path)
             abs_path = os.path.join(root_path, path)
 
+            ##print(abs_path)
             # Assert that the file exists, since it was sourced, it
             # must surely also exist.
             assert os.path.isfile(abs_path), "Internal error"
@@ -223,7 +235,7 @@ def parse_args():
     parser.add_argument("autoconf")
     parser.add_argument("sources")
     parser.add_argument("conf_fragments", metavar='conf', type=str, nargs='+')
-
+    
     return parser.parse_args()
 
 

@@ -58,7 +58,7 @@ Z_GENERIC_SECTION(.vt_pointer_section) void *_vector_table_pointer;
 
 #define VECTOR_ADDRESS 0
 
-void __weak relocate_vector_table(void)
+void __weak relocate_vector_table(void) 66
 {
 #if defined(CONFIG_XIP) && (CONFIG_FLASH_BASE_ADDRESS != 0) || \
     !defined(CONFIG_XIP) && (CONFIG_SRAM_BASE_ADDRESS != 0)

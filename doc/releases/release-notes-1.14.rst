@@ -9,57 +9,40 @@ We are pleased to announce the release of Zephyr kernel version 1.14.0.
 
 Major enhancements with this release include:
 
-* The Zephyr project now supports over 160 different board configurations
-  spanning 8 architectures. All architectures are rigorously tested and
-  validated using one of the many simulation platforms supported by the
-  project: QEMU, Renode, ARC Simulator, and the native POSIX configuration.
+* The Zephyr project now supports over 160 different board configurations   spanning 8 architectures. All architectures are rigorously tested and
+  validated using one of the many simulation platforms supported by the   project: QEMU, Renode, ARC Simulator, and the native POSIX configuration.
 
-* The timing subsystem has been reworked and reimplemented, greatly
-  simplifying the resulting drivers, removing thousands of lines
+* The timing subsystem has been reworked and reimplemented, greatly  simplifying the resulting drivers, removing thousands of lines
   of code, and reducing a typical kernel build size by hundreds of bytes.
   TICKLESS_KERNEL mode is now the default on all architectures.
 
-* The Symmetric Multi-Processing (SMP) subsystem continues to evolve
-  with the addition of a new CPU affinity API that can "pin" threads to
-  specific cores or sets of cores. The core kernel no longer uses the
-  global irq_lock on SMP systems, and exclusively uses the spinlock API
+* The Symmetric Multi-Processing (SMP) subsystem continues to evolve   with the addition of a new CPU affinity API that can "pin" threads to
+  specific cores or sets of cores. The core kernel no longer uses the   global irq_lock on SMP systems, and exclusively uses the spinlock API
   (which on uniprocessor systems reduces to the same code).
 
-* Zephyr now has support for the x86_64 architecture. It is currently
-  implemented only for QEMU targets, supports arbitrary numbers of CPUs,
+* Zephyr now has support for the x86_64 architecture. It is currently   implemented only for QEMU targets, supports arbitrary numbers of CPUs,
   and runs in SMP mode by default, our first platform to do so.
 
-* We've overhauled the Network packet (:ref:`net-pkt <net_pkt_interface>`)
-  API and moved the majority of components and protocols to use the
-  :ref:`BSD socket API <bsd_sockets_interface>`, including MQTT, CoAP,
-  LWM2M, and SNTP.
+* We've overhauled the Network packet (:ref:`net-pkt <net_pkt_interface>`)   API and moved the majority of components and protocols to use the
+  :ref:`BSD socket API <bsd_sockets_interface>`, including MQTT, CoAP,   LWM2M, and SNTP.
 
-* We enhanced the native POSIX port by adding UART, USB, and display
-  drivers. Based on this port, we added a simulated NRF52832 SoC which enables
-  running full system, multi-node simulations, without the need of real
-  hardware.
+* We enhanced the native POSIX port by adding UART, USB, and display   drivers. Based on this port, we added a simulated NRF52832 SoC which enables
+  running full system, multi-node simulations, without the need of real   hardware.
 
-* We added an experimental BLE split software Controller with Upper Link Layer
-  and Lower Link Layer for supporting multiple BLE radio hardware
+* We added an experimental BLE split software Controller with Upper Link Layer   and Lower Link Layer for supporting multiple BLE radio hardware
   architectures.
 
-* The power management subsystem has been overhauled to support device idle
-  power management and move most of the power management logic from the
+* The power management subsystem has been overhauled to support device idle   power management and move most of the power management logic from the
   application back to the BSP.
 
-* We introduced major updates and an overhaul to both the logging and
-  shell subsystems, supporting multiple back-ends, integration
+* We introduced major updates and an overhaul to both the logging and   shell subsystems, supporting multiple back-ends, integration
   of logging into the shell, and delayed log processing.
 
-* Introduced the ``west`` tool for management of multiple repositories and
-  enhanced support for flashing and debugging.
+* Introduced the ``west`` tool for management of multiple repositories and   enhanced support for flashing and debugging.
 
-* Added support for application user mode, application memory
-  partitions, and hardware stack protection in ARMv8m
+* Added support for application user mode, application memory   partitions, and hardware stack protection in ARMv8m
 
-* Applied MISRA-C code guideline on the kernel and core components of Zephyr.
-  MISRA-C is a well established code guideline focused on embedded systems and
-  aims to improve code safety, security and portability.
+* Applied MISRA-C code guideline on the kernel and core components of Zephyr.   MISRA-C is a well established code guideline focused on embedded systems and   aims to improve code safety, security and portability.
 
 The following sections provide detailed lists of changes by component.
 
@@ -68,23 +51,17 @@ Security Vulnerability Related
 
 The following security vulnerabilities (CVEs) were addressed in this release:
 
-* Tinycrypt HMAC-PRNG implementation doesn't take the HMAC state
-  clearing into account as it performs the HMAC operations, thereby using a
-  incorrect HMAC key for some of the HMAC operations.
-  (CVE-2017-14200)
+* Tinycrypt HMAC-PRNG implementation doesn't take the HMAC state   clearing into account as it performs the HMAC operations, thereby using a
+  incorrect HMAC key for some of the HMAC operations.   (CVE-2017-14200)
 
-* The shell DNS command can cause unpredictable results due to misuse of stack
-  variables.
+* The shell DNS command can cause unpredictable results due to misuse of stack   variables.
   (CVE-2017-14201)
 
-* The shell implementation does not protect against buffer overruns resulting
-  in unpredictable behavior.
+* The shell implementation does not protect against buffer overruns resulting   in unpredictable behavior.
   (CVE-2017-14202)
 
-* We introduced Kernel Page Table Isolation, a technique for
-  mitigating the Meltdown security vulnerability on x86 systems. This
-  technique helps isolate user and kernel space memory by ensuring
-  non-essential kernel pages are unmapped in the page tables when the CPU
+* We introduced Kernel Page Table Isolation, a technique for   mitigating the Meltdown security vulnerability on x86 systems. This
+  technique helps isolate user and kernel space memory by ensuring   non-essential kernel pages are unmapped in the page tables when the CPU
   is running in the least privileged user mode, Ring 3. This is the
   fix for Rogue Data Cache Load. (CVE-2017-5754)
 
@@ -101,67 +78,46 @@ Kernel
 
 * The timing subsystem has been reworked and mostly replaced:
 
-   - The timer driver API has been extensively reworked, greatly
-     simplifying the resulting drivers. By removing thousands of lines
-     of code, we reduced the size of a typical kernel build by hundreds
-     of bytes.
+   - The timer driver API has been extensively reworked, greatly      simplifying the resulting drivers. By removing thousands of lines
+     of code, we reduced the size of a typical kernel build by hundreds      of bytes.
 
-   - TICKLESS_KERNEL mode is now the default on all architectures.  Many
-     bugs were fixed in this support.
+   - TICKLESS_KERNEL mode is now the default on all architectures.  Many      bugs were fixed in this support.
 
 * Lots of work on the rapidly-evolving SMP subsystem:
 
-  - There is a new CPU affinity API available to "pin" threads to
-    specific cores or sets of cores.
+  - There is a new CPU affinity API available to "pin" threads to     specific cores or sets of cores.
 
-  - The core kernel is now 100% free of use of the global irq_lock on
-    SMP systems, and exclusively uses the spinlock API (which on
+  - The core kernel is now 100% free of use of the global irq_lock on     SMP systems, and exclusively uses the spinlock API (which on
     uniprocessor systems reduces to the same code).
 
-  - Zephyr now has a simple interprocessor interrupt framework for
-    applications, such as the scheduler, to use for synchronously
-    notifying other processors of state changes.  It's currently implemented
-    only on x86_64 and used only for thread abort.
+  - Zephyr now has a simple interprocessor interrupt framework for     applications, such as the scheduler, to use for synchronously
+    notifying other processors of state changes.  It's currently implemented     only on x86_64 and used only for thread abort.
 
-* Zephyr now has support for the x86_64 architecture.  It is
-  currently implemented only for QEMU targets.
+* Zephyr now has support for the x86_64 architecture.  It is   currently implemented only for QEMU targets.
 
-  - It supports arbitrary numbers of CPUs in SMP, and runs in SMP mode
-    by default, our first platform to do so.
+  - It supports arbitrary numbers of CPUs in SMP, and runs in SMP mode     by default, our first platform to do so.
 
-  - It currently runs code built for the "x32" ABI, which is a native
-    64-bit hardware state, where pointers are 32 bit in memory.
-    Zephyr still has some lurking word size bugs that will need to be
-    fixed to turn on native 64 bit code generation.
+  - It currently runs code built for the "x32" ABI, which is a native     64-bit hardware state, where pointers are 32 bit in memory.
+    Zephyr still has some lurking word size bugs that will need to be     fixed to turn on native 64 bit code generation.
 
-* K_THREAD_STACK_BUFFER() has been demoted to a private API and will be removed
-  in a future Zephyr release.
-* A new API sys_mutex has been introduced. It has the same semantics
-  as a k_mutex, but the memory for it can reside in user memory and so
+* K_THREAD_STACK_BUFFER() has been demoted to a private API and will be removed   in a future Zephyr release.
+* A new API sys_mutex has been introduced. It has the same semantics   as a k_mutex, but the memory for it can reside in user memory and so
   no explicit permission management is required.
 * sys_mem_pool() now uses a sys_mutex() for concurrency control.
 * Memory protection changes:
 
-  - CONFIG_APPLICATION_MEMORY option has been removed from Zephyr. All test
-    cases have been appropriately converted to use memory domains.
-  - The build time memory domain partition generation mechanism, formerly
-    an optional feature under CONFIG_APP_SHARED_MEM, has been overhauled
+  - CONFIG_APPLICATION_MEMORY option has been removed from Zephyr. All test     cases have been appropriately converted to use memory domains.
+  - The build time memory domain partition generation mechanism, formerly     an optional feature under CONFIG_APP_SHARED_MEM, has been overhauled
     and is now a core part of memory protection.
-  - Userspace is no longer enabled by default for tests. Tests that are
-    written to execute wholly or in part in user mode will need to enable
-    CONFIG_TEST_USERSPACE in the test's project configuration. There are
-    assertions in place to enforce that this is done.
-  - The default stack size for handling system calls has been increased to
-    1024 bytes.
+  - Userspace is no longer enabled by default for tests. Tests that are     written to execute wholly or in part in user mode will need to enable
+    CONFIG_TEST_USERSPACE in the test's project configuration. There are     assertions in place to enforce that this is done.
+  - The default stack size for handling system calls has been increased to     1024 bytes.
 
-* We started applying MISRA-C (https://www.misra.org.uk/) code guideline on
-  the Zephyr kernel. MISRA-C is a well established code guideline focused on
-  embedded systems and aims to improve code safety, security, and portability.
-  This initial effort was narrowed to the Zephyr kernel and architecture
-  code, and focused only on mandatory and required rules. The following rules
+* We started applying MISRA-C (https://www.misra.org.uk/) code guideline on   the Zephyr kernel. MISRA-C is a well established code guideline focused on   embedded systems and aims to improve code safety, security, and portability.
+  This initial effort was narrowed to the Zephyr kernel and architecture   code, and focused only on mandatory and required rules. The following rules
   were addressed:
 
-  - Namespace changes
+  - Namespace changes 
   - Normalize switch() operators
   - Avoid implicit conversion to boolean types
   - Fix and normalize headers guard
@@ -179,8 +135,7 @@ Architectures
 * ARM:
 
   * Re-architect Memory Protection code for ARM and NXP
-  * Fully support application user mode, memory partitions, and
-    stack protection in ARMv8m
+  * Fully support application user mode, memory partitions, and     stack protection in ARMv8m
   * Support built-in stack overflow protection in user mode in ARMv8m
   * Fix stack overflow error reporting
   * Support executing from SRAM in XIP builds
@@ -197,19 +152,15 @@ Architectures
 
   * Userspace and MPU driver improvements
   * Optimization of the thread stack definition macros
-  * Bug fixes: handling of lp_xxx registers in _rirq_return_from_coop, nested
-    interrupt handling, hardware stack bounds checking, execution benchmarking
+  * Bug fixes: handling of lp_xxx registers in _rirq_return_from_coop, nested     interrupt handling, hardware stack bounds checking, execution benchmarking
   * Atomic operations are now usable from user mode on all ARC CPUs
 
 * x86:
 
   - Support for non-PAE page tables has been dropped.
-  - Fixed various security CVEs related to micro-architecture side-effects of
-    speculative execution, as detailed in the security notes.
-  - Added robustness when reporting exceptions generated due to stack
-    overflows or induced in user mode
-  - Pages containing read-only data no longer have the execute disable (XD)
-    bit un-set.
+  - Fixed various security CVEs related to micro-architecture side-effects of     speculative execution, as detailed in the security notes.
+  - Added robustness when reporting exceptions generated due to stack     overflows or induced in user mode
+  - Pages containing read-only data no longer have the execute disable (XD)     bit un-set.
   - Fix potential IRQ stack corruption when handling double faults
 
 
@@ -217,11 +168,8 @@ Boards & SoC Support
 ********************
 
 * Added the all new :ref:`NRF52 simulated board <nrf52_bsim>`:
-  This simulator models some of the hardware in an NRF52832 SOC, to enable
-  running full system, multi-node simulations, without the need of real
-  hardware.  It enables fast, reproducible testing, development, and debugging
-  of an application, BlueTooth (BT) stack, and kernel. It relies on `BabbleSim`_
-  to simulate the radio physical layer.
+  This simulator models some of the hardware in an NRF52832 SOC, to enable   running full system, multi-node simulations, without the need of real
+  hardware.  It enables fast, reproducible testing, development, and debugging   of an application, BlueTooth (BT) stack, and kernel. It relies on `BabbleSim`_   to simulate the radio physical layer.
 
 * Added SoC configuration for nRF9160 and Musca ARM Cortex-M33 CPU
 
@@ -278,8 +226,7 @@ Drivers and Sensors
 
   * A UART driver that maps the Zephyr UART to a new host PTY
   * A USB driver that can expose a host connected USB device
-  * A display driver that will render to a dedicated window using the SDL
-    library
+  * A display driver that will render to a dedicated window using the SDL     library
   * A dedicated backend for the new logger subsystem
 
 * Counter
@@ -295,8 +242,7 @@ Drivers and Sensors
 * UART
 
   * Added asynchronous API.
-  * Added implementation of the new asynchronous API for nRF series (UART and
-    UARTE).
+  * Added implementation of the new asynchronous API for nRF series (UART and     UARTE).
 
 * ADC
 
@@ -377,8 +323,7 @@ Drivers and Sensors
   * watchdog: Converted drivers to new API
   * wifi: simplelink: Implemented setsockopt() for TLS offload
   * wifi: Added inventek es-WiFi driver
-  * timer: Refactored and accuracy improvements of the arcv2 timer driver (boot
-    time measurements)
+  * timer: Refactored and accuracy improvements of the arcv2 timer driver (boot    time measurements)
   * timer: Added/reworked Xtensa, RISV-V, NRF, HPET, and ARM systick drivers
   * gpio: Added RV32M1 driver
   * hwinfo: Added new hwinfo API and drivers
@@ -411,8 +356,7 @@ Networking
   - LWM2M
   - HTTP client and server
   - Websocket
-* Network packet (:ref:`net-pkt <net_pkt_interface>`) API overhaul. The new
-  net-pkt API uses less memory and is more streamlined than the old one.
+* Network packet (:ref:`net-pkt <net_pkt_interface>`) API overhaul. The new   net-pkt API uses less memory and is more streamlined than the old one.
 * Implement following BSD socket APIs: ``freeaddrinfo()``, ``gethostname()``,
   ``getnameinfo()``, ``getsockopt()``, ``select()``, ``setsockopt()``,
   ``shutdown()``
@@ -501,20 +445,14 @@ Build and Infrastructure
 * Added support for out-of-tree architectures.
 * Added support for out-of-tree implementations of in-tree drivers.
 * `BabbleSim`_ has been integrated in Zephyr's CI system.
-* Introduced ``DT_`` prefix for all labels generated for information extracted
-  from device tree (with a few exceptions, such as labels for LEDs and buttons,
-  kept for backward compatibility with existing applications).  Deprecated all
-  other defines that are generated.
+* Introduced ``DT_`` prefix for all labels generated for information extracted   from device tree (with a few exceptions, such as labels for LEDs and buttons,   kept for backward compatibility with existing applications).  Deprecated all   other defines that are generated.
 * Introduce CMake variables for DT symbols, just as we have for CONFIG symbols.
-* Move DeviceTree processing before Kconfig. Thereby allowing software
-  to be configured based on DeviceTree information.
-* Automatically change the KCONFIG_ROOT when the application directory
-  has a Kconfig file.
+* Move DeviceTree processing before Kconfig. Thereby allowing software   to be configured based on DeviceTree information.
+* Automatically change the KCONFIG_ROOT when the application directory   has a Kconfig file.
 * Added :ref:`west <west>` tool for multiple repository management
 * Added support for :ref:`Zephyr modules <ext-projs>`
 * Build system ``flash`` and ``debug`` targets now require west
-* Added generation of DT_<COMPAT>_<INSTANCE>_<PROP> defines which allowed
-  sensor or other drivers on buses like I2C or SPI to not require dts fixup.
+* Added generation of DT_<COMPAT>_<INSTANCE>_<PROP> defines which allowed    sensor or other drivers on buses like I2C or SPI to not require dts fixup.
 * Added proper support for device tree boolean properties
 
 Libraries / Subsystems
@@ -536,8 +474,7 @@ Libraries / Subsystems
 
 * Logging:
 
-  - Removed sys_log, which has been replaced by the new logging subsystem
-    introduced in v1.13
+  - Removed sys_log, which has been replaced by the new logging subsystem     introduced in v1.13
   - Refactored log modules registration macros
   - Improved synchronous operation (see :option:`CONFIG_LOG_IMMEDIATE`)
   - Added commands to control the logger using shell
@@ -634,15 +571,12 @@ Documentation
 Tests and Samples
 *****************
 
-* A new set of, multinode, full system tests of the BT stack,
-  based on `BabbleSim`_ have been added.
+* A new set of, multinode, full system tests of the BT stack,  based on `BabbleSim`_ have been added.
 * Added unique identifiers to all tests and samples.
 * Removed old footprint benchmarks
-* Added tests for CMSIS RTOS API v2, BSD Sockets, CANBus, Settings, USB,
-  and miscellaneous drivers.
+* Added tests for CMSIS RTOS API v2, BSD Sockets, CANBus, Settings, USB,   and miscellaneous drivers.
 * Added benchmark applications for the scheduler and mbedTLS
-* Added samples for the display subsystem, LVGL, Google IOT, Sockets, CMSIS RTOS
-  API v2, Wifi, Shields, IPC subsystem, USB CDC ACM, and USB HID.
+* Added samples for the display subsystem, LVGL, Google IOT, Sockets, CMSIS RTOS   API v2, Wifi, Shields, IPC subsystem, USB CDC ACM, and USB HID.
 * Add support for using sanitycheck testing with Renode
 
 

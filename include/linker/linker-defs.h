@@ -34,13 +34,13 @@
  */
 #ifdef CONFIG_DEVICE_POWER_MANAGEMENT
 #define DEVICE_COUNT \
-	((__device_init_end - __device_init_start) / _DEVICE_STRUCT_SIZEOF)
-#define DEV_BUSY_SZ	(((DEVICE_COUNT + 31) / 32) * 4)
-#define DEVICE_BUSY_BITFIELD()			\
-		FILL(0x00) ;			\
-		__device_busy_start = .;	\
-		. = . + DEV_BUSY_SZ;		\
-		__device_busy_end = .;
+    ((__device_init_end - __device_init_start) / _DEVICE_STRUCT_SIZEOF)
+#define DEV_BUSY_SZ (((DEVICE_COUNT + 31) / 32) * 4)
+#define DEVICE_BUSY_BITFIELD()          \
+        FILL(0x00) ;            \
+        __device_busy_start = .;    \
+        . = . + DEV_BUSY_SZ;        \
+        __device_busy_end = .;
 #else
 #define DEVICE_BUSY_BITFIELD()
 #endif
@@ -51,10 +51,10 @@
  * ensure the objects aren't discarded if there is no direct reference to them
  */
 
-#define DEVICE_INIT_LEVEL(level)				\
-		__device_##level##_start = .;			\
-		KEEP(*(SORT(.init_##level[0-9])));		\
-		KEEP(*(SORT(.init_##level[1-9][0-9])));	\
+#define DEVICE_INIT_LEVEL(level)                \
+        __device_##level##_start = .;           \
+        KEEP(*(SORT(.init_##level[0-9])));      \
+        KEEP(*(SORT(.init_##level[1-9][0-9]))); \
 
 /*
  * link in device initialization objects for all devices that are automatically
@@ -62,32 +62,32 @@
  * initialized (i.e. ordered by level, sorted by priority within a level)
  */
 
-#define	DEVICE_INIT_SECTIONS()			\
-		__device_init_start = .;	\
-		DEVICE_INIT_LEVEL(PRE_KERNEL_1)	\
-		DEVICE_INIT_LEVEL(PRE_KERNEL_2)	\
-		DEVICE_INIT_LEVEL(POST_KERNEL)	\
-		DEVICE_INIT_LEVEL(APPLICATION)	\
-		__device_init_end = .;		\
-		DEVICE_BUSY_BITFIELD()		\
+#define DEVICE_INIT_SECTIONS()          \
+        __device_init_start = .;    \
+        DEVICE_INIT_LEVEL(PRE_KERNEL_1) \
+        DEVICE_INIT_LEVEL(PRE_KERNEL_2) \
+        DEVICE_INIT_LEVEL(POST_KERNEL)  \
+        DEVICE_INIT_LEVEL(APPLICATION)  \
+        __device_init_end = .;      \
+        DEVICE_BUSY_BITFIELD()      \
 
 
 /* define a section for undefined device initialization levels */
-#define DEVICE_INIT_UNDEFINED_SECTION()		\
-		KEEP(*(SORT(.init_[_A-Z0-9]*)))	\
+#define DEVICE_INIT_UNDEFINED_SECTION()     \
+        KEEP(*(SORT(.init_[_A-Z0-9]*))) \
 
 /*
  * link in shell initialization objects for all modules that use shell and
  * their shell commands are automatically initialized by the kernel.
  */
 
-#define	SHELL_INIT_SECTIONS()				\
-		__shell_module_start = .;		\
-		KEEP(*(".shell_module_*"));		\
-		__shell_module_end = .;			\
-		__shell_cmd_start = .;			\
-		KEEP(*(".shell_cmd_*"));		\
-		__shell_cmd_end = .;			\
+#define SHELL_INIT_SECTIONS()               \
+        __shell_module_start = .;       \
+        KEEP(*(".shell_module_*"));     \
+        __shell_module_end = .;         \
+        __shell_cmd_start = .;          \
+        KEEP(*(".shell_cmd_*"));        \
+        __shell_cmd_end = .;            \
 
 /*
  * link in shell initialization objects for all modules that use shell and
@@ -199,7 +199,7 @@ extern char _vector_end[];
 extern char __gcov_bss_start[];
 extern char __gcov_bss_end[];
 extern char __gcov_bss_size[];
-#endif	/* CONFIG_COVERAGE_GCOV */
+#endif  /* CONFIG_COVERAGE_GCOV */
 
 /* end address of image, used by newlib for the heap */
 extern char _end[];

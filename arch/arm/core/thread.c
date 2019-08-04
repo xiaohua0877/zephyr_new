@@ -50,113 +50,113 @@ extern u8_t *z_priv_stack_find(void *obj);
  * @return N/A
  */
 
-void z_new_thread(struct k_thread *thread, k_thread_stack_t *stack,
-		 size_t stackSize, k_thread_entry_t pEntry,
-		 void *parameter1, void *parameter2, void *parameter3,
-		 int priority, unsigned int options)
+__attribute__((optimize("-O0"))) void z_new_thread(struct k_thread *thread, k_thread_stack_t *stack,
+                  size_t stackSize, k_thread_entry_t pEntry,
+                  void *parameter1, void *parameter2, void *parameter3,
+                  int priority, unsigned int options)
 {
-	char *pStackMem = Z_THREAD_STACK_BUFFER(stack);
-	char *stackEnd;
-	/* Offset between the top of stack and the high end of stack area. */
-	u32_t top_of_stack_offset = 0U;
+    char *pStackMem = Z_THREAD_STACK_BUFFER(stack);
+    char *stackEnd;
+    /* Offset between the top of stack and the high end of stack area. */
+    u32_t top_of_stack_offset = 0U;
 
-	Z_ASSERT_VALID_PRIO(priority, pEntry);
+    Z_ASSERT_VALID_PRIO(priority, pEntry);
 
 #if defined(CONFIG_USERSPACE)
-	/* Truncate the stack size to align with the MPU region granularity.
-	 * This is done proactively to account for the case when the thread
-	 * switches to user mode (thus, its stack area will need to be MPU-
-	 * programmed to be assigned unprivileged RW access permission).
-	 */
-	stackSize &= ~(CONFIG_ARM_MPU_REGION_MIN_ALIGN_AND_SIZE - 1);
+    /* Truncate the stack size to align with the MPU region granularity.
+     * This is done proactively to account for the case when the thread
+     * switches to user mode (thus, its stack area will need to be MPU-
+     * programmed to be assigned unprivileged RW access permission).
+     */
+    stackSize &= ~(CONFIG_ARM_MPU_REGION_MIN_ALIGN_AND_SIZE - 1);
 
 #ifdef CONFIG_THREAD_USERSPACE_LOCAL_DATA
-	/* Reserve space on top of stack for local data. */
-	u32_t p_local_data = STACK_ROUND_DOWN(pStackMem + stackSize
-		- sizeof(*thread->userspace_local_data));
+    /* Reserve space on top of stack for local data. */
+    u32_t p_local_data = STACK_ROUND_DOWN(pStackMem + stackSize
+                                          - sizeof(*thread->userspace_local_data));
 
-	thread->userspace_local_data =
-		(struct _thread_userspace_local_data *)(p_local_data);
+    thread->userspace_local_data =
+        (struct _thread_userspace_local_data *)(p_local_data);
 
-	/* Top of actual stack must be moved below the user local data. */
-	top_of_stack_offset = (u32_t)
-		(pStackMem + stackSize - ((char *)p_local_data));
+    /* Top of actual stack must be moved below the user local data. */
+    top_of_stack_offset = (u32_t)
+                          (pStackMem + stackSize - ((char *)p_local_data));
 
 #endif /* CONFIG_THREAD_USERSPACE_LOCAL_DATA */
 #endif /* CONFIG_USERSPACE */
 
 #if CONFIG_MPU_REQUIRES_POWER_OF_TWO_ALIGNMENT && CONFIG_USERSPACE
-	/* This is required to work-around the case where the thread
-	 * is created without using K_THREAD_STACK_SIZEOF() macro in
-	 * k_thread_create(). If K_THREAD_STACK_SIZEOF() is used, the
-	 * Guard size has already been take out of stackSize.
-	 */
-	stackSize -= MPU_GUARD_ALIGN_AND_SIZE;
+    /* This is required to work-around the case where the thread
+     * is created without using K_THREAD_STACK_SIZEOF() macro in
+     * k_thread_create(). If K_THREAD_STACK_SIZEOF() is used, the
+     * Guard size has already been take out of stackSize.
+     */
+    stackSize -= MPU_GUARD_ALIGN_AND_SIZE;
 #endif
-	stackEnd = pStackMem + stackSize;
+    stackEnd = pStackMem + stackSize;
 
-	struct __esf *pInitCtx;
+    struct __esf *pInitCtx;
 
-	z_new_thread_init(thread, pStackMem, stackSize, priority,
-			 options);
+    z_new_thread_init(thread, pStackMem, stackSize, priority,
+                      options);
 
-	/* carve the thread entry struct from the "base" of the stack */
-	pInitCtx = (struct __esf *)(STACK_ROUND_DOWN(stackEnd -
-		(char *)top_of_stack_offset - sizeof(struct __esf)));
+    /* carve the thread entry struct from the "base" of the stack */
+    pInitCtx = (struct __esf *)(STACK_ROUND_DOWN(stackEnd -
+                                (char *)top_of_stack_offset - sizeof(struct __esf)));
 
 #if CONFIG_USERSPACE
-	if ((options & K_USER) != 0) {
-		pInitCtx->pc = (u32_t)z_arch_user_mode_enter;
-	} else {
-		pInitCtx->pc = (u32_t)z_thread_entry;
-	}
+    if ((options & K_USER) != 0) {
+        pInitCtx->pc = (u32_t)z_arch_user_mode_enter;
+    } else {
+        pInitCtx->pc = (u32_t)z_thread_entry;
+    }
 #else
-	pInitCtx->pc = (u32_t)z_thread_entry;
+    pInitCtx->pc = (u32_t)z_thread_entry;
 #endif
 
-	/* force ARM mode by clearing LSB of address */
-	pInitCtx->pc &= 0xfffffffe;
+    /* force ARM mode by clearing LSB of address */
+    pInitCtx->pc &= 0xfffffffe;
 
-	pInitCtx->a1 = (u32_t)pEntry;
-	pInitCtx->a2 = (u32_t)parameter1;
-	pInitCtx->a3 = (u32_t)parameter2;
-	pInitCtx->a4 = (u32_t)parameter3;
-	pInitCtx->xpsr =
-		0x01000000UL; /* clear all, thumb bit is 1, even if RO */
+    pInitCtx->a1 = (u32_t)pEntry;
+    pInitCtx->a2 = (u32_t)parameter1;
+    pInitCtx->a3 = (u32_t)parameter2;
+    pInitCtx->a4 = (u32_t)parameter3;
+    pInitCtx->xpsr =
+        0x01000000UL; /* clear all, thumb bit is 1, even if RO */
 #ifdef CONFIG_FLOAT
-	pInitCtx->fpscr = (u32_t)0; /* clears FPU status/control register*/
+    pInitCtx->fpscr = (u32_t)0; /* clears FPU status/control register*/
 #endif
 
-	thread->callee_saved.psp = (u32_t)pInitCtx;
-	thread->arch.basepri = 0;
+    thread->callee_saved.psp = (u32_t)pInitCtx;
+    thread->arch.basepri = 0;
 
 #if CONFIG_USERSPACE
-	thread->arch.mode = 0;
-	thread->arch.priv_stack_start = 0;
+    thread->arch.mode = 0;
+    thread->arch.priv_stack_start = 0;
 #endif
 
-	/* swap_return_value can contain garbage */
+    /* swap_return_value can contain garbage */
 
-	/*
-	 * initial values in all other registers/thread entries are
-	 * irrelevant.
-	 */
+    /*
+     * initial values in all other registers/thread entries are
+     * irrelevant.
+     */
 }
 
 #ifdef CONFIG_USERSPACE
 
 FUNC_NORETURN void z_arch_user_mode_enter(k_thread_entry_t user_entry,
-	void *p1, void *p2, void *p3)
+        void *p1, void *p2, void *p3)
 {
 
-	/* Set up privileged stack before entering user mode */
-	_current->arch.priv_stack_start =
-		(u32_t)z_priv_stack_find(_current->stack_obj);
+    /* Set up privileged stack before entering user mode */
+    _current->arch.priv_stack_start =
+        (u32_t)z_priv_stack_find(_current->stack_obj);
 
-	z_arm_userspace_enter(user_entry, p1, p2, p3,
-			     (u32_t)_current->stack_info.start,
-			     _current->stack_info.size);
-	CODE_UNREACHABLE;
+    z_arm_userspace_enter(user_entry, p1, p2, p3,
+                          (u32_t)_current->stack_info.start,
+                          _current->stack_info.size);
+    CODE_UNREACHABLE;
 }
 
 #endif
@@ -174,26 +174,26 @@ FUNC_NORETURN void z_arch_user_mode_enter(k_thread_entry_t user_entry,
 void configure_builtin_stack_guard(struct k_thread *thread)
 {
 #if defined(CONFIG_USERSPACE)
-	if ((thread->arch.mode & CONTROL_nPRIV_Msk) != 0) {
-		/* Only configure stack limit for threads in privileged mode
-		 * (i.e supervisor threads or user threads doing system call).
-		 * User threads executing in user mode do not require a stack
-		 * limit protection.
-		 */
-		return;
-	}
-	u32_t guard_start = thread->arch.priv_stack_start ?
-			    (u32_t)thread->arch.priv_stack_start :
-			    (u32_t)thread->stack_obj;
+    if ((thread->arch.mode & CONTROL_nPRIV_Msk) != 0) {
+        /* Only configure stack limit for threads in privileged mode
+         * (i.e supervisor threads or user threads doing system call).
+         * User threads executing in user mode do not require a stack
+         * limit protection.
+         */
+        return;
+    }
+    u32_t guard_start = thread->arch.priv_stack_start ?
+                        (u32_t)thread->arch.priv_stack_start :
+                        (u32_t)thread->stack_obj;
 
-	__ASSERT(thread->stack_info.start == ((u32_t)thread->stack_obj),
-		"stack_info.start does not point to the start of the"
-		"thread allocated area.");
+    __ASSERT(thread->stack_info.start == ((u32_t)thread->stack_obj),
+             "stack_info.start does not point to the start of the"
+             "thread allocated area.");
 #else
-	u32_t guard_start = thread->stack_info.start;
+    u32_t guard_start = thread->stack_info.start;
 #endif
 #if defined(CONFIG_CPU_CORTEX_M_HAS_SPLIM)
-	__set_PSPLIM(guard_start);
+    __set_PSPLIM(guard_start);
 #else
 #error "Built-in PSP limit checks not supported by HW"
 #endif
@@ -203,12 +203,12 @@ void configure_builtin_stack_guard(struct k_thread *thread)
 #if defined(CONFIG_MPU_STACK_GUARD) || defined(CONFIG_USERSPACE)
 
 #define IS_MPU_GUARD_VIOLATION(guard_start, fault_addr, stack_ptr) \
-	(fault_addr == -EINVAL) ? \
-	((fault_addr >= guard_start) && \
-	(fault_addr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE)) && \
-	(stack_ptr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE))) \
-	: \
-	(stack_ptr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE))
+    (fault_addr == -EINVAL) ? \
+    ((fault_addr >= guard_start) && \
+    (fault_addr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE)) && \
+    (stack_ptr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE))) \
+    : \
+    (stack_ptr < (guard_start + MPU_GUARD_ALIGN_AND_SIZE))
 
 /**
  * @brief Assess occurrence of current thread's stack corruption
@@ -248,48 +248,48 @@ void configure_builtin_stack_guard(struct k_thread *thread)
  */
 u32_t z_check_thread_stack_fail(const u32_t fault_addr, const u32_t psp)
 {
-	const struct k_thread *thread = _current;
+    const struct k_thread *thread = _current;
 
-	if (!thread) {
-		return 0;
-	}
+    if (!thread) {
+        return 0;
+    }
 
 #if defined(CONFIG_USERSPACE)
-	if (thread->arch.priv_stack_start) {
-		/* User thread */
-		if ((__get_CONTROL() & CONTROL_nPRIV_Msk) == 0) {
-			/* User thread in privilege mode */
-			if (IS_MPU_GUARD_VIOLATION(
-				thread->arch.priv_stack_start,
-				fault_addr, psp)) {
-				/* Thread's privilege stack corruption */
-				return thread->arch.priv_stack_start +
-					MPU_GUARD_ALIGN_AND_SIZE;
-			}
-		} else {
-			if (psp < (u32_t)thread->stack_obj) {
-				/* Thread's user stack corruption */
-				return (u32_t)thread->stack_obj;
-			}
-		}
-	} else {
-		/* Supervisor thread */
-		if (IS_MPU_GUARD_VIOLATION((u32_t)thread->stack_obj,
-			fault_addr, psp)) {
-			/* Supervisor thread stack corruption */
-			return (u32_t)thread->stack_obj +
-				MPU_GUARD_ALIGN_AND_SIZE;
-		}
-	}
+    if (thread->arch.priv_stack_start) {
+        /* User thread */
+        if ((__get_CONTROL() & CONTROL_nPRIV_Msk) == 0) {
+            /* User thread in privilege mode */
+            if (IS_MPU_GUARD_VIOLATION(
+                        thread->arch.priv_stack_start,
+                        fault_addr, psp)) {
+                /* Thread's privilege stack corruption */
+                return thread->arch.priv_stack_start +
+                       MPU_GUARD_ALIGN_AND_SIZE;
+            }
+        } else {
+            if (psp < (u32_t)thread->stack_obj) {
+                /* Thread's user stack corruption */
+                return (u32_t)thread->stack_obj;
+            }
+        }
+    } else {
+        /* Supervisor thread */
+        if (IS_MPU_GUARD_VIOLATION((u32_t)thread->stack_obj,
+                                   fault_addr, psp)) {
+            /* Supervisor thread stack corruption */
+            return (u32_t)thread->stack_obj +
+                   MPU_GUARD_ALIGN_AND_SIZE;
+        }
+    }
 #else /* CONFIG_USERSPACE */
-	if (IS_MPU_GUARD_VIOLATION(thread->stack_info.start,
-			fault_addr, psp)) {
-		/* Thread stack corruption */
-		return thread->stack_info.start +
-			MPU_GUARD_ALIGN_AND_SIZE;
-	}
+    if (IS_MPU_GUARD_VIOLATION(thread->stack_info.start,
+                               fault_addr, psp)) {
+        /* Thread stack corruption */
+        return thread->stack_info.start +
+               MPU_GUARD_ALIGN_AND_SIZE;
+    }
 #endif /* CONFIG_USERSPACE */
 
-	return 0;
+    return 0;
 }
 #endif /* CONFIG_MPU_STACK_GUARD || CONFIG_USERSPACE */

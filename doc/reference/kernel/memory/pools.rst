@@ -146,7 +146,7 @@ since that is the closest matching size supported by the memory pool.
 
     if (k_mem_pool_alloc(&my_pool, &block, 200, 100) == 0)) {
         memset(block.data, 0, 200);
-	...
+    ...
     } else {
         printf("Memory allocation time-out");
     }

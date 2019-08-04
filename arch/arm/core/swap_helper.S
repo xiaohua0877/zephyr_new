@@ -100,10 +100,10 @@ SECTION_FUNC(TEXT, __pendsv)
 
     /*
      * Prepare to clear PendSV with interrupts unlocked, but
-     * don't clear it yet. PendSV must not be cleared until
+     * don't clear it yet. PendSV must not be cleared until'
      * the new thread is context-switched in since all decisions
      * to pend PendSV have been taken with the current kernel
-     * state and this is what we're handling currently.
+     * state and this is what we're handling currently.'
      */
     ldr v4, =_SCS_ICSR
     ldr v3, =_SCS_ICSR_UNPENDSV
@@ -129,7 +129,7 @@ SECTION_FUNC(TEXT, __pendsv)
 
     /* Restore previous interrupt disable state (irq_lock key) */
 #if (defined(CONFIG_CPU_CORTEX_M0PLUS) || defined(CONFIG_CPU_CORTEX_M0)) && \
-	    _thread_offset_to_basepri > 124
+        _thread_offset_to_basepri > 124
     /* Doing it this way since the offset to thread->arch.basepri can in
      * some configurations be larger than the maximum of 124 for ldr/str
      * immediate offsets.
@@ -201,7 +201,7 @@ _thread_irq_disabled:
     msr CONTROL, r3
 
     /* ISB is not strictly necessary here (stack pointer is not being
-     * touched), but it's recommended to avoid executing pre-fetched
+     * touched), but it's' recommended to avoid executing pre-fetched
      * instructions with the previous privilege.
      */
     isb
@@ -423,7 +423,7 @@ valid_syscall_id:
     ldr r0, [r0, #_kernel_offset_to_current]
     ldr r1, [r0, #_thread_offset_to_mode]
     bic r1, #1
-    /* Store (privileged) mode in thread's mode state variable */
+    /* Store (privileged) mode in thread's ' mode state variable */
     str r1, [r0, #_thread_offset_to_mode]
     dsb
     /* set mode to privileged, r2 still contains value from CONTROL */
@@ -431,7 +431,7 @@ valid_syscall_id:
     msr CONTROL, r2
 
     /* ISB is not strictly necessary here (stack pointer is not being
-     * touched), but it's recommended to avoid executing pre-fetched
+     * touched), but it's ' recommended to avoid executing pre-fetched
      * instructions with the previous privilege.
      */
     isb

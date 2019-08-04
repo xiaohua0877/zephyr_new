@@ -407,21 +407,21 @@ the format specified by the YAML bindings.  For example:
 .. code-block:: c
 
    /* gpio_keys */
-   #define DT_GPIO_KEYS_0		1
+   #define DT_GPIO_KEYS_0       1
 
    /* button_0 */
-   #define DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER	"GPIO_2"
-   #define DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS	0
-   #define DT_GPIO_KEYS_BUTTON_0_GPIO_PIN		6
-   #define DT_GPIO_KEYS_BUTTON_0_LABEL		"User SW2"
-   #define DT_GPIO_KEYS_SW1_GPIO_CONTROLLER	DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER
-   #define DT_GPIO_KEYS_SW1_GPIO_FLAGS		DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS
-   #define DT_GPIO_KEYS_SW1_GPIO_PIN		DT_GPIO_KEYS_BUTTON_0_GPIO_PIN
-   #define DT_GPIO_KEYS_SW1_LABEL			DT_GPIO_KEYS_BUTTON_0_LABEL
-   #define SW1_GPIO_CONTROLLER			DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER
-   #define SW1_GPIO_FLAGS				DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS
-   #define SW1_GPIO_PIN				DT_GPIO_KEYS_BUTTON_0_GPIO_PIN
-   #define SW1_LABEL				DT_GPIO_KEYS_BUTTON_0_LABEL
+   #define DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER    "GPIO_2"
+   #define DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS 0
+   #define DT_GPIO_KEYS_BUTTON_0_GPIO_PIN       6
+   #define DT_GPIO_KEYS_BUTTON_0_LABEL      "User SW2"
+   #define DT_GPIO_KEYS_SW1_GPIO_CONTROLLER DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER
+   #define DT_GPIO_KEYS_SW1_GPIO_FLAGS      DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS
+   #define DT_GPIO_KEYS_SW1_GPIO_PIN        DT_GPIO_KEYS_BUTTON_0_GPIO_PIN
+   #define DT_GPIO_KEYS_SW1_LABEL           DT_GPIO_KEYS_BUTTON_0_LABEL
+   #define SW1_GPIO_CONTROLLER          DT_GPIO_KEYS_BUTTON_0_GPIO_CONTROLLER
+   #define SW1_GPIO_FLAGS               DT_GPIO_KEYS_BUTTON_0_GPIO_FLAGS
+   #define SW1_GPIO_PIN             DT_GPIO_KEYS_BUTTON_0_GPIO_PIN
+   #define SW1_LABEL                DT_GPIO_KEYS_BUTTON_0_LABEL
 
 Additionally, a file named ``generated_dts_board_fixups.h`` is
 generated in the same directory concatenating all board-related fixup files.

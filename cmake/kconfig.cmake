@@ -18,6 +18,7 @@ set(BOARD_DEFCONFIG ${BOARD_DIR}/${BOARD}_defconfig)
 set(DOTCONFIG                  ${PROJECT_BINARY_DIR}/.config)
 set(PARSED_KCONFIG_SOURCES_TXT ${PROJECT_BINARY_DIR}/kconfig/sources.txt)
 
+message(STATUS "----run to21  ${CONF_FILE}")
 if(CONF_FILE)
 string(REPLACE " " ";" CONF_FILE_AS_LIST "${CONF_FILE}")
 endif()
@@ -57,6 +58,7 @@ foreach(kconfig_target
     menuconfig
     ${EXTRA_KCONFIG_TARGETS}
     )
+  message(STATUS "----run61 to  ${kconfig_target}")  
   add_custom_target(
     ${kconfig_target}
     ${CMAKE_COMMAND} -E env
@@ -107,6 +109,7 @@ endif()
 # make sure they are set at the end so we can override any other setting
 file(GLOB config_files ${APPLICATION_BINARY_DIR}/*.conf)
 list(SORT config_files)
+  message(STATUS "----run to112  ${config_files}") 
 set(
   merge_config_files
   ${BOARD_DEFCONFIG}
@@ -125,7 +128,7 @@ foreach(f ${merge_config_files})
   else()
     set(path ${APPLICATION_SOURCE_DIR}/${f})
   endif()
-
+    message(STATUS "----run to131  ${path}") 
   list(APPEND merge_config_files_with_absolute_paths ${path})
 endforeach()
 
@@ -189,6 +192,7 @@ execute_process(
   # can use relative paths in CONF_FILE, e.g. CONF_FILE=nrf5.conf
   RESULT_VARIABLE ret
   )
+#message(FATAL_ERROR " exit180 ")  
 if(NOT "${ret}" STREQUAL "0")
   message(FATAL_ERROR "command failed with return code: ${ret}")
 endif()
@@ -196,21 +200,27 @@ endif()
 # Read out the list of 'Kconfig' sources that were used by the engine.
 file(STRINGS ${PARSED_KCONFIG_SOURCES_TXT} PARSED_KCONFIG_SOURCES_LIST)
 
+message(STATUS "----run to202  ${merge_config_files}") 
+message(STATUS "----run to203  ${DOTCONFIG}") 
+
+##message(STATUS "----run to204  ${PARSED_KCONFIG_SOURCES_LIST}") 
 # Force CMAKE configure when the Kconfig sources or configuration files changes.
 foreach(kconfig_input
     ${merge_config_files}
     ${DOTCONFIG}
     ${PARSED_KCONFIG_SOURCES_LIST}
     )
+    ###message(STATUS "----run to208  ${kconfig_input}") 
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${kconfig_input})
 endforeach()
-
+#message(FATAL_ERROR " exit ")
 add_custom_target(config-sanitycheck DEPENDS ${DOTCONFIG})
 
 # Remove the CLI Kconfig symbols from the namespace and
 # CMakeCache.txt. If the symbols end up in DOTCONFIG they will be
 # re-introduced to the namespace through 'import_kconfig'.
 foreach (name ${cache_variable_names})
+  ###message(STATUS "----run to218  ${name}") 
   if("${name}" MATCHES "^CONFIG_")
     unset(${name})
     unset(${name} CACHE)
@@ -222,6 +232,7 @@ import_kconfig(CONFIG_ ${DOTCONFIG})
 
 # Re-introduce the CLI Kconfig symbols that survived
 foreach (name ${cache_variable_names})
+  #message(STATUS "----run to230  ${name}") 
   if("${name}" MATCHES "^CONFIG_")
     if(DEFINED ${name})
       set(${name} ${${name}} CACHE STRING "")

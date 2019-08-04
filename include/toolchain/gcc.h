@@ -23,7 +23,7 @@
  * output is easier to understand than the common BUILD_ASSERT macros.
  */
 #elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) || \
-	(__STDC_VERSION__) >= 201100
+    (__STDC_VERSION__) >= 201100
 #define BUILD_ASSERT(EXPR) _Static_assert(EXPR, "")
 #define BUILD_ASSERT_MSG(EXPR, MSG) _Static_assert(EXPR, MSG)
 #endif
@@ -34,15 +34,15 @@
 #define ALIAS_OF(of) __attribute__((alias(#of)))
 
 #define FUNC_ALIAS(real_func, new_alias, return_type) \
-	return_type new_alias() ALIAS_OF(real_func)
+    return_type new_alias() ALIAS_OF(real_func)
 
 #if defined(CONFIG_ARCH_POSIX)
 /*let's not segfault if this were to happen for some reason*/
 #define CODE_UNREACHABLE \
 {\
-	posix_print_error_and_exit("CODE_UNREACHABLE reached from %s:%d\n",\
-		__FILE__, __LINE__);\
-	__builtin_unreachable(); \
+    posix_print_error_and_exit("CODE_UNREACHABLE reached from %s:%d\n",\
+        __FILE__, __LINE__);\
+    __builtin_unreachable(); \
 }
 #else
 #define CODE_UNREACHABLE __builtin_unreachable()
@@ -55,17 +55,17 @@
 #if defined(CONFIG_ARM)
 #define _NODATA_SECTION(segment)  __attribute__((section(#segment)))
 #else
-#define _NODATA_SECTION(segment)				\
-	__attribute__((section(#segment ",\"wa\",@nobits#")))
+#define _NODATA_SECTION(segment)                \
+    __attribute__((section(#segment ",\"wa\",@nobits#")))
 #endif
 
 /* Unaligned access */
-#define UNALIGNED_GET(p)						\
-__extension__ ({							\
-	struct  __attribute__((__packed__)) {				\
-		__typeof__(*(p)) __v;					\
-	} *__p = (__typeof__(__p)) (p);					\
-	__p->__v;							\
+#define UNALIGNED_GET(p)                        \
+__extension__ ({                            \
+    struct  __attribute__((__packed__)) {               \
+        __typeof__(*(p)) __v;                   \
+    } *__p = (__typeof__(__p)) (p);                 \
+    __p->__v;                           \
 })
 
 
@@ -82,21 +82,21 @@ __extension__ ({							\
  */
 #define UNALIGNED_PUT(v, p)                                             \
 do {                                                                    \
-	struct __attribute__((__packed__)) {                            \
-		__typeof__(*p) __v;                                     \
-	} *__p = (__typeof__(__p)) (p);                                 \
-	__p->__v = (v);                                                 \
-	compiler_barrier();                                             \
+    struct __attribute__((__packed__)) {                            \
+        __typeof__(*p) __v;                                     \
+    } *__p = (__typeof__(__p)) (p);                                 \
+    __p->__v = (v);                                                 \
+    compiler_barrier();                                             \
 } while (false)
 
 #else
 
 #define UNALIGNED_PUT(v, p)                                             \
 do {                                                                    \
-	struct __attribute__((__packed__)) {                            \
-		__typeof__(*p) __v;                                     \
-	} *__p = (__typeof__(__p)) (p);                                 \
-	__p->__v = (v);                                               \
+    struct __attribute__((__packed__)) {                            \
+        __typeof__(*p) __v;                                     \
+    } *__p = (__typeof__(__p)) (p);                                 \
+    __p->__v = (v);                                               \
 } while (false)
 
 #endif
@@ -108,9 +108,9 @@ do {                                                                    \
 #define Z_GENERIC_SECTION(segment) __GENERIC_SECTION(segment)
 
 #define ___in_section(a, b, c) \
-	__attribute__((section("." Z_STRINGIFY(a)			\
-				"." Z_STRINGIFY(b)			\
-				"." Z_STRINGIFY(c))))
+    __attribute__((section("." Z_STRINGIFY(a)           \
+                "." Z_STRINGIFY(b)          \
+                "." Z_STRINGIFY(c))))
 #define __in_section(a, b, c) ___in_section(a, b, c)
 
 #define __in_section_unique(seg) ___in_section(seg, __FILE__, __COUNTER__)
@@ -124,22 +124,22 @@ do {                                                                    \
 #if !defined(CONFIG_XIP)
 #define __ramfunc
 #elif defined(CONFIG_ARCH_HAS_RAMFUNC_SUPPORT)
-#define __ramfunc	__attribute__((noinline))			\
-			__attribute__((long_call, section(".ramfunc")))
+#define __ramfunc   __attribute__((noinline))           \
+            __attribute__((long_call, section(".ramfunc")))
 #endif /* !CONFIG_XIP */
 
 #ifndef __packed
 #define __packed        __attribute__((__packed__))
 #endif
 #ifndef __aligned
-#define __aligned(x)	__attribute__((__aligned__(x)))
+#define __aligned(x)    __attribute__((__aligned__(x)))
 #endif
 #define __may_alias     __attribute__((__may_alias__))
 #ifndef __printf_like
 #define __printf_like(f, a)   __attribute__((format (printf, f, a)))
 #endif
-#define __used		__attribute__((__used__))
-#define __deprecated	__attribute__((deprecated))
+#define __used      __attribute__((__used__))
+#define __deprecated    __attribute__((deprecated))
 #define ARG_UNUSED(x) (void)(x)
 
 #define likely(x)   __builtin_expect((bool)!!(x), true)
@@ -193,7 +193,7 @@ do {                                                                    \
 #if defined(_ASMLANGUAGE) && !defined(_LINKER)
 
 #if defined(CONFIG_ARM) || defined(CONFIG_NIOS2) || defined(CONFIG_RISCV32) \
-	|| defined(CONFIG_XTENSA)
+    || defined(CONFIG_XTENSA)
 #define GTEXT(sym) .global sym; .type sym, %function
 #define GDATA(sym) .global sym; .type sym, %object
 #define WTEXT(sym) .weak sym; .type sym, %function
@@ -205,18 +205,18 @@ do {                                                                    \
  */
 
 .macro glbl_text symbol
-	.globl \symbol
-	.type \symbol, %function
+    .globl \symbol
+    .type \symbol, %function
 .endm
 
 .macro glbl_data symbol
-	.globl \symbol
-	.type \symbol, %object
+    .globl \symbol
+    .type \symbol, %object
 .endm
 
 .macro weak_data symbol
-	.weak \symbol
-	.type \symbol, %object
+    .weak \symbol
+    .type \symbol, %object
 .endm
 
 #define GTEXT(sym) glbl_text sym
@@ -232,7 +232,7 @@ do {                                                                    \
  * These macros specify the section in which a given function or variable
  * resides.
  *
- * - SECTION_FUNC	allows only one function to reside in a sub-section
+ * - SECTION_FUNC   allows only one function to reside in a sub-section
  * - SECTION_SUBSEC_FUNC allows multiple functions to reside in a sub-section
  *   This ensures that garbage collection only discards the section
  *   if all functions in the sub-section are not referenced.
@@ -248,38 +248,38 @@ do {                                                                    \
  */
 
 .macro section_var section, symbol
-	.section .\section\().\symbol
-	\symbol :
+    .section .\section\().\symbol
+    \symbol :
 .endm
 
 .macro section_func section, symbol
-	.section .\section\().\symbol, "ax"
-	FUNC_CODE()
-	PERFOPT_ALIGN
-	\symbol :
-	FUNC_INSTR(\symbol)
+    .section .\section\().\symbol, "ax"
+    FUNC_CODE()
+    PERFOPT_ALIGN
+    \symbol :
+    FUNC_INSTR(\symbol)
 .endm
 
 .macro section_subsec_func section, subsection, symbol
-	.section .\section\().\subsection, "ax"
-	PERFOPT_ALIGN
-	\symbol :
+    .section .\section\().\subsection, "ax"
+    PERFOPT_ALIGN
+    \symbol :
 .endm
 
 #define SECTION_VAR(sect, sym) section_var sect, sym
 #define SECTION_FUNC(sect, sym) section_func sect, sym
 #define SECTION_SUBSEC_FUNC(sect, subsec, sym) \
-	section_subsec_func sect, subsec, sym
+    section_subsec_func sect, subsec, sym
 #else /* !CONFIG_ARC */
 
 #define SECTION_VAR(sect, sym)  .section .sect.##sym; sym :
-#define SECTION_FUNC(sect, sym)						\
-	.section .sect.sym, "ax";					\
-				FUNC_CODE()				\
-				PERFOPT_ALIGN; sym :		\
-							FUNC_INSTR(sym)
-#define SECTION_SUBSEC_FUNC(sect, subsec, sym)				\
-		.section .sect.subsec, "ax"; PERFOPT_ALIGN; sym :
+#define SECTION_FUNC(sect, sym)                     \
+    .section .sect.sym, "ax";                   \
+                FUNC_CODE()             \
+                PERFOPT_ALIGN; sym :        \
+                            FUNC_INSTR(sym)
+#define SECTION_SUBSEC_FUNC(sect, subsec, sym)              \
+        .section .sect.subsec, "ax"; PERFOPT_ALIGN; sym :
 
 #endif /* CONFIG_ARC */
 
@@ -303,9 +303,9 @@ do {                                                                    \
 #define GEN_OFFSET_EXTERN(name) extern const char name[]
 
 #define GEN_ABS_SYM_BEGIN(name) \
-	EXTERN_C void name(void); \
-	void name(void)         \
-	{
+    EXTERN_C void name(void); \
+    void name(void)         \
+    {
 
 #define GEN_ABS_SYM_END }
 
@@ -320,43 +320,43 @@ do {                                                                    \
  */
 
 #define GEN_ABSOLUTE_SYM(name, value)               \
-	__asm__(".globl\t" #name "\n\t.equ\t" #name \
-		",%B0"                              \
-		"\n\t.type\t" #name ",%%object" :  : "n"(~(value)))
+    __asm__(".globl\t" #name "\n\t.equ\t" #name \
+        ",%B0"                              \
+        "\n\t.type\t" #name ",%%object" :  : "n"(~(value)))
 
 #elif defined(CONFIG_X86) || defined(CONFIG_ARC)
 
 #define GEN_ABSOLUTE_SYM(name, value)               \
-	__asm__(".globl\t" #name "\n\t.equ\t" #name \
-		",%c0"                              \
-		"\n\t.type\t" #name ",@object" :  : "n"(value))
+    __asm__(".globl\t" #name "\n\t.equ\t" #name \
+        ",%c0"                              \
+        "\n\t.type\t" #name ",@object" :  : "n"(value))
 
 #elif defined(CONFIG_X86_64)
 
 #define GEN_ABSOLUTE_SYM(name, value)               \
-	__asm__(".globl\t" #name "\n\t.equ\t" #name \
-		",%0"                               \
-		"\n\t.type\t" #name ",@object" :  : "n"(value))
+    __asm__(".globl\t" #name "\n\t.equ\t" #name \
+        ",%0"                               \
+        "\n\t.type\t" #name ",@object" :  : "n"(value))
 
 #elif defined(CONFIG_NIOS2) || defined(CONFIG_RISCV32) || defined(CONFIG_XTENSA)
 
 /* No special prefixes necessary for constants in this arch AFAICT */
-#define GEN_ABSOLUTE_SYM(name, value)		\
-	__asm__(".globl\t" #name "\n\t.equ\t" #name \
-		",%0"                              \
-		"\n\t.type\t" #name ",%%object" :  : "n"(value))
+#define GEN_ABSOLUTE_SYM(name, value)       \
+    __asm__(".globl\t" #name "\n\t.equ\t" #name \
+        ",%0"                              \
+        "\n\t.type\t" #name ",%%object" :  : "n"(value))
 
 #elif defined(CONFIG_ARCH_POSIX)
 #define GEN_ABSOLUTE_SYM(name, value)               \
-	__asm__(".globl\t" #name "\n\t.equ\t" #name \
-		",%c0"                              \
-		"\n\t.type\t" #name ",@object" :  : "n"(value))
+    __asm__(".globl\t" #name "\n\t.equ\t" #name \
+        ",%c0"                              \
+        "\n\t.type\t" #name ",@object" :  : "n"(value))
 #else
 #error processor architecture not supported
 #endif
 
 #define compiler_barrier() do { \
-	__asm__ __volatile__ ("" ::: "memory"); \
+    __asm__ __volatile__ ("" ::: "memory"); \
 } while (false)
 
 #endif /* ZEPHYR_INCLUDE_TOOLCHAIN_GCC_H_ */
